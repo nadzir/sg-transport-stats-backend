@@ -4,12 +4,12 @@
   "description": "A delightful way to building a Node.js RESTful API Services with beautiful code written in TypeScript",
   "main": "src/app.ts",
   "scripts": {
-    "start": "nps",
-    "test": "npm start test",
     "build": "npm start build",
     "presetup": "yarn install",
     "setup": "npm start config && npm start setup.script",
-    "start:db": "docker run --name mysql -e MYSQL_ROOT_PASSWORD=password -e MYSQL_DATABASE=lta_db -e MYSQL_USER=dev -e MYSQL_PASSWORD=dev -p=3306:3306 -d mysql:5.7.20"
+    "start": "nps",
+    "start:db": "docker run --name mysql -e MYSQL_ROOT_PASSWORD=password -e MYSQL_DATABASE=lta_db -e MYSQL_USER=dev -e MYSQL_PASSWORD=dev -p=3306:3306 -d mysql:5.7.20",
+    "test": "npm start test"
   },
   "engines": {
     "node": ">=8.0.0"
