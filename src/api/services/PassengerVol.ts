@@ -5,11 +5,17 @@ import fs from 'fs';
 import unzipper from 'unzipper';
 import { Logger, LoggerInterface } from '../../decorators/Logger';
 import { getOsEnv } from '../../lib/env/utils';
+import { PassengerVolRepository } from '../repositories/PassengerVolRepository';
+import { OrmRepository } from 'typeorm-typedi-extensions';
+import csv from 'csv-parser';
+import { PassengerVol } from '../models/PassengerVol';
+import uuid = require('uuid');
 
 @Service()
 export class PassengerVolService {
 
     constructor(
+        @OrmRepository() private passengerVolRepository: PassengerVolRepository,
         @Logger(__filename) private log: LoggerInterface
     ) { }
 
@@ -44,5 +50,31 @@ export class PassengerVolService {
     public unzipFile(zipFile: string, dataDir: string): void {
         const readFile = fs.createReadStream(zipFile);
         readFile.pipe(unzipper.Extract({ path: dataDir }));
+    }
+
+    public async update(dataDir: string): Promise<void> {
+        this.log.info(`Updating passenger volume from path ${dataDir}`);
+        const files = fs.readdirSync(dataDir);
+        files.forEach((fileName) => {
+            this.log.info(`Updating passenger volume from file ${fileName}`);
+            fs.createReadStream(`${dataDir}/${fileName}`)
+                .pipe(csv())
+                .on('data', async (data) => {
+                    const passengerVol = new PassengerVol();
+                    passengerVol.id = uuid.v1();
+                    passengerVol.yearMonth = data.YEAR_MONTH;
+                    passengerVol.dayType = data.DAY_TYPE;
+                    passengerVol.timePerHour = data.TIME_PER_HOUR;
+                    passengerVol.ptType = data.PT_TYPE;
+                    passengerVol.originPtCode = data.ORIGIN_PT_CODE;
+                    passengerVol.destinationPtCode = data.DESTINATION_PT_CODE;
+                    passengerVol.totalTrips = data.TOTAL_TRIPS;
+                    await this.passengerVolRepository.save(passengerVol);
+                })
+                .on('end', () => {
+                    this.log.info(`Updated passenger volume from file ${fileName}`);
+                    Promise.resolve();
+                });
+        });
     }
 }
