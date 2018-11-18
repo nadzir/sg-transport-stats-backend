@@ -58,7 +58,7 @@ export class PassengerVolService {
         files.forEach((fileName) => {
             this.log.info(`Reading data passenger volume from file ${fileName}`);
             let ind = 0;
-            const stream = fs.createReadStream(`${dataDir}/${fileName}`)
+            const stream = fs.createReadStream(`${dataDir}/${fileName}`, { highWaterMark: 1 });
             stream
                 .pipe(csv())
                 .on('data', async (data) => {
@@ -78,7 +78,7 @@ export class PassengerVolService {
                     stream.resume();
                 })
                 .on('end', () => {
-                   this.log.info(`Updated passenger volume from file ${fileName}`);
+                    this.log.info(`Updated passenger volume from file ${fileName}`);
                     Promise.resolve();
                 });
         });
