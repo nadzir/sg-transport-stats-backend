@@ -53,11 +53,13 @@ export class PassengerVolService {
     }
 
     public async update(dataDir: string): Promise<void> {
-        this.log.info(`Updating passenger volume from path ${dataDir}`);
+        this.log.info(`Reading data passenger volume from path ${dataDir}`);
         const files = fs.readdirSync(dataDir);
         files.forEach((fileName) => {
-            this.log.info(`Updating passenger volume from file ${fileName}`);
-            fs.createReadStream(`${dataDir}/${fileName}`)
+            this.log.info(`Reading data passenger volume from file ${fileName}`);
+            let ind = 0;
+            const stream = fs.createReadStream(`${dataDir}/${fileName}`)
+            stream
                 .pipe(csv())
                 .on('data', async (data) => {
                     const passengerVol = new PassengerVol();
@@ -69,10 +71,14 @@ export class PassengerVolService {
                     passengerVol.originPtCode = data.ORIGIN_PT_CODE;
                     passengerVol.destinationPtCode = data.DESTINATION_PT_CODE;
                     passengerVol.totalTrips = data.TOTAL_TRIPS;
+                    stream.pause();
+                    this.log.debug(`updating : ${ind}`);
+                    ind = ind + 1;
                     await this.passengerVolRepository.save(passengerVol);
+                    stream.resume();
                 })
                 .on('end', () => {
-                    this.log.info(`Updated passenger volume from file ${fileName}`);
+                   this.log.info(`Updated passenger volume from file ${fileName}`);
                     Promise.resolve();
                 });
         });
