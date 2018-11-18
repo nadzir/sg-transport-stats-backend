@@ -4,41 +4,38 @@ import { Column, Entity,  PrimaryColumn } from 'typeorm';
 @Entity()
 export class PassengerVol {
 
-    @PrimaryColumn('uuid')
-    public id: string;
-
     @IsNotEmpty()
-    @Column({
+    @PrimaryColumn({
         name: 'year_month',
     })
     public yearMonth: string;
 
     @IsNotEmpty()
-    @Column({
+    @PrimaryColumn({
         name: 'day_type',
     })
     public dayType: string;
 
     @IsNotEmpty()
-    @Column({
+    @PrimaryColumn({
         name: 'time_per_hour',
     })
     public timePerHour: string;
 
     @IsNotEmpty()
-    @Column({
+    @PrimaryColumn({
         name: 'pt_type',
     })
     public ptType: string;
 
     @IsNotEmpty()
-    @Column({
+    @PrimaryColumn({
         name: 'origin_pt_code',
     })
     public originPtCode: string;
 
     @IsNotEmpty()
-    @Column({
+    @PrimaryColumn({
         name: 'destination_pt_code',
     })
     public destinationPtCode: string;
