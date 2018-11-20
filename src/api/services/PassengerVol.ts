@@ -63,7 +63,6 @@ export class PassengerVolService {
                 .pipe(csv())
                 .on('data', async (data) => {
                     const passengerVol = new PassengerVol();
-                    passengerVol.id = uuid.v1();
                     passengerVol.yearMonth = data.YEAR_MONTH;
                     passengerVol.dayType = data.DAY_TYPE;
                     passengerVol.timePerHour = data.TIME_PER_HOUR;
