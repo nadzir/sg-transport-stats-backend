@@ -9,14 +9,15 @@ export class BusStop {
     })
     public busStopCode: string;
 
-    @IsNotEmpty()
     @Column({
         name: 'road_name',
+        nullable: true,
     })
     public roadName: string;
 
-    @IsNotEmpty()
-    @Column()
+    @Column({
+        nullable: true,
+    })
     public description: string;
 
     @IsNotEmpty()

@@ -14,7 +14,8 @@ export class BusStopController {
 
     @Get('/update')
     public async update(): Promise<string> {
-        this.busStopService.update();
+        // this.busStopService.update();
+        this.busStopService.updateFromJson();
         return Promise.resolve('hi');
     }
 }
