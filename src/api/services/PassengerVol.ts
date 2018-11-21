@@ -9,7 +9,6 @@ import { PassengerVolRepository } from '../repositories/PassengerVolRepository';
 import { OrmRepository } from 'typeorm-typedi-extensions';
 import csv from 'csv-parser';
 import { PassengerVol } from '../models/PassengerVol';
-import uuid = require('uuid');
 
 @Service()
 export class PassengerVolService {
@@ -18,6 +17,17 @@ export class PassengerVolService {
         @OrmRepository() private passengerVolRepository: PassengerVolRepository,
         @Logger(__filename) private log: LoggerInterface
     ) { }
+
+    public find(): Promise<PassengerVol[]> {
+        this.log.info('Find all passenger volume');
+        // return this.passengerVolRepository
+        //     .find({
+        //         order: {
+        //             totalTrips: 'DESC',
+        //         },
+        //     });
+        return this.passengerVolRepository.findWithLocation();
+    }
 
     public async downloadZipFile(zipFile: string): Promise<void> {
         try {

@@ -1,3 +1,4 @@
+/* tslint:disable */
 import {MigrationInterface, QueryRunner} from "typeorm";
 
 export class PassengerVolSetPriColumn1542571818088 implements MigrationInterface {

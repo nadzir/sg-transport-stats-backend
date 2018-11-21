@@ -1,5 +1,6 @@
 import { IsNotEmpty } from 'class-validator';
-import { Column, Entity,  PrimaryColumn } from 'typeorm';
+import {Column, Entity, PrimaryColumn, ManyToOne, JoinColumn} from 'typeorm';
+import { BusStop } from './BusStop';
 
 @Entity()
 export class PassengerVol {
@@ -32,12 +33,16 @@ export class PassengerVol {
     @PrimaryColumn({
         name: 'origin_pt_code',
     })
+    @ManyToOne(type => BusStop, busStop => busStop.busStopCode)
+    @JoinColumn({ name: 'origin_pt_code' })
     public originPtCode: string;
 
     @IsNotEmpty()
     @PrimaryColumn({
         name: 'destination_pt_code',
     })
+    @ManyToOne(type => BusStop, busStop => busStop.busStopCode)
+    @JoinColumn({ name: 'origin_pt_code' })
     public destinationPtCode: string;
 
     @IsNotEmpty()

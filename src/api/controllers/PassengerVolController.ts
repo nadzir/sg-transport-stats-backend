@@ -3,6 +3,7 @@ import {
 } from 'routing-controllers';
 
 import {PassengerVolService} from '../services/PassengerVol';
+import { PassengerVol } from '../models/PassengerVol';
 
 // @Authorized()
 @JsonController('/passengerVol')
@@ -11,6 +12,11 @@ export class PassengerVolController {
     constructor(
         private passengerVolService: PassengerVolService
     ) { }
+
+    @Get ('/')
+    public async getAll(): Promise<PassengerVol[]> {
+        return this.passengerVolService.find();
+    }
 
     @Get('/update')
     public async update(): Promise<string> {
