@@ -10,6 +10,8 @@ export class PassengerVolRepository extends Repository<PassengerVol> {
         .select()
         .leftJoinAndSelect('passengerVol.originPtCode', 'originPtCode')
         .leftJoinAndSelect('passengerVol.destinationPtCode', 'destinationPtCode')
+        .orderBy('passengerVol.totalTrips', 'DESC')
+        .take(100)
         .getMany();
     }
 }

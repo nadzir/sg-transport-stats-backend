@@ -42,7 +42,7 @@ export class PassengerVol {
         name: 'destination_pt_code',
     })
     @ManyToOne(type => BusStop, busStop => busStop.busStopCode)
-    @JoinColumn({ name: 'origin_pt_code' })
+    @JoinColumn({ name: 'destination_pt_code' })
     public destinationPtCode: string;
 
     @IsNotEmpty()
