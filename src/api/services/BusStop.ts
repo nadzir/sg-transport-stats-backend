@@ -15,10 +15,10 @@ export class BusStopService {
         @Logger(__filename) private log: LoggerInterface
     ) { }
 
-    public async update(): Promise<void> {
+    public async update(index: number): Promise<void> {
         const response = await axios({
             method: 'get',
-            url: 'http://datamall2.mytransport.sg/ltaodataservice/BusStops',
+            url: `http://datamall2.mytransport.sg/ltaodataservice/BusStops?$skip=${index * 500}`,
             headers: {
                 Accountkey: getOsEnv('LTA_ACCOUNT_KEY'),
             },
