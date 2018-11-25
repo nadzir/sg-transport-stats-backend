@@ -109,14 +109,14 @@ export class PassengerVolService {
 
                     }
 
-                    // stream.pause();
+                    stream.pause();
 
                     this.log.debug(`updating : ${ind}`);
                     ind = ind + 1;
 
-                    // await this.passengerVolRepository.save(passengerVol);
+                    await this.passengerVolRepository.save(passengerVol);
 
-                    // stream.resume();
+                    stream.resume();
                 })
                 .on('end', () => {
                     this.log.info(`Updated passenger volume from file ${fileName}`);
