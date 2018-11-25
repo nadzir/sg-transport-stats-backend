@@ -6,7 +6,7 @@ export const getDirections = (origin: any, destination: any): Promise<string> =>
             origin,
             destination,
             mode: 'transit',
-            transit_mode: ['bus']
+            transit_mode: ['bus'],
         }, (err, response) => {
             // console.log(response)
             if (response.status === 200) {
@@ -14,5 +14,5 @@ export const getDirections = (origin: any, destination: any): Promise<string> =>
             }
             resolve(undefined);
         });
-    })
+    });
 };

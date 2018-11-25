@@ -95,12 +95,13 @@ export class PassengerVolService {
                         const polyline = await getDirections(originLatLng, destinationLatLng);
                         passengerVol.polyline = polyline;
 
-
                         // const oneMapKey = getOsEnv('ONE_MAP_TOKEN')
                         // console.log('hi')
+                        /* tslint:disable-next-line */
                         // console.log(`https://developers.onemap.sg/privateapi/routingsvc/route?start=${originBusStop.latitude},${originBusStop.longitude}&end=${destinationBusStop.latitude},${destinationBusStop.longitude}&routeType=pt&token=${oneMapKey}&date=2017-02-03&time=07:35:00&mode=BUS&maxWalkDistance=1000&numItineraries=3`);
                         // const response = await axios({
                         //     method: 'get',
+                        /* tslint:disable-next-line */
                         //     url: `https://developers.onemap.sg/privateapi/routingsvc/route?start=${originBusStop.latitude},${originBusStop.longitude}&end=${destinationBusStop.latitude},${destinationBusStop.longitude}&routeType=pt&token=${oneMapKey}&date=2017-02-03&time=07:35:00&mode=BUS&maxWalkDistance=1000&numItineraries=3`
                         // });
                         // // passengerVol.polyline = response.data.value.route_geometry;
