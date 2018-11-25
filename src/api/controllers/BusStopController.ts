@@ -20,8 +20,6 @@ export class BusStopController {
             console.log(index);
             this.busStopService.update(index);
         });
-
-        // this.busStopService.updateFromJson();
-        return Promise.resolve('hi');
+        return Promise.resolve('Updating bus stop');
     }
 }

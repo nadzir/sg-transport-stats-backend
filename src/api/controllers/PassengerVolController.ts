@@ -27,7 +27,7 @@ export class PassengerVolController {
     //    this.passengerVolService.unzipFile(zipFile, dataDir);
        this.passengerVolService.update(dataDir);
 
-        return Promise.resolve('hi');
+        return Promise.resolve('updating passenger volume');
     }
 
 }
