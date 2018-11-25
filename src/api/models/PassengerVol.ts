@@ -1,5 +1,5 @@
 import { IsNotEmpty } from 'class-validator';
-import {Column, Entity, PrimaryColumn, ManyToOne, JoinColumn} from 'typeorm';
+import { Column, Entity, PrimaryColumn, ManyToOne, JoinColumn } from 'typeorm';
 import { BusStop } from './BusStop';
 
 @Entity()
@@ -21,7 +21,7 @@ export class PassengerVol {
     @PrimaryColumn({
         name: 'time_per_hour',
     })
-    public timePerHour: string;
+    public timePerHour: number;
 
     @IsNotEmpty()
     @PrimaryColumn({
@@ -49,8 +49,11 @@ export class PassengerVol {
     @Column({
         name: 'total_trips',
     })
-    public totalTrips: string;
+    public totalTrips: number;
 
-    @Column({nullable: true})
+    @Column({
+        nullable: true,
+        length: 1000,
+    })
     public polyline: string;
 }
