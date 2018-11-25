@@ -9,13 +9,16 @@ import { PassengerVolRepository } from '../repositories/PassengerVolRepository';
 import { OrmRepository } from 'typeorm-typedi-extensions';
 import csv from 'csv-parser';
 import { PassengerVol } from '../models/PassengerVol';
+import { BusStopService } from './BusStop';
+import { getDirections } from '../../lib/google';
 
 @Service()
 export class PassengerVolService {
 
     constructor(
         @OrmRepository() private passengerVolRepository: PassengerVolRepository,
-        @Logger(__filename) private log: LoggerInterface
+        @Logger(__filename) private log: LoggerInterface,
+        private busStopService: BusStopService
     ) { }
 
     public find(): Promise<PassengerVol[]> {
@@ -67,7 +70,9 @@ export class PassengerVolService {
         const files = fs.readdirSync(dataDir);
         files.forEach((fileName) => {
             this.log.info(`Reading data passenger volume from file ${fileName}`);
+
             let ind = 0;
+
             const stream = fs.createReadStream(`${dataDir}/${fileName}`, { highWaterMark: 1 });
             stream
                 .pipe(csv())
@@ -80,11 +85,37 @@ export class PassengerVolService {
                     passengerVol.originPtCode = data.ORIGIN_PT_CODE;
                     passengerVol.destinationPtCode = data.DESTINATION_PT_CODE;
                     passengerVol.totalTrips = data.TOTAL_TRIPS;
-                    stream.pause();
+
+                    const originBusStop = await this.busStopService.getBusStopDetail(passengerVol.originPtCode);
+                    const destinationBusStop = await this.busStopService.getBusStopDetail(passengerVol.destinationPtCode);
+
+                    if (originBusStop && destinationBusStop) {
+                        const originLatLng = [originBusStop.latitude, originBusStop.longitude];
+                        const destinationLatLng = [destinationBusStop.latitude, destinationBusStop.longitude];
+                        const polyline = await getDirections(originLatLng, destinationLatLng);
+                        passengerVol.polyline = polyline;
+
+
+                        // const oneMapKey = getOsEnv('ONE_MAP_TOKEN')
+                        // console.log('hi')
+                        // console.log(`https://developers.onemap.sg/privateapi/routingsvc/route?start=${originBusStop.latitude},${originBusStop.longitude}&end=${destinationBusStop.latitude},${destinationBusStop.longitude}&routeType=pt&token=${oneMapKey}&date=2017-02-03&time=07:35:00&mode=BUS&maxWalkDistance=1000&numItineraries=3`);
+                        // const response = await axios({
+                        //     method: 'get',
+                        //     url: `https://developers.onemap.sg/privateapi/routingsvc/route?start=${originBusStop.latitude},${originBusStop.longitude}&end=${destinationBusStop.latitude},${destinationBusStop.longitude}&routeType=pt&token=${oneMapKey}&date=2017-02-03&time=07:35:00&mode=BUS&maxWalkDistance=1000&numItineraries=3`
+                        // });
+                        // // passengerVol.polyline = response.data.value.route_geometry;
+                        // console.log(response)
+
+                    }
+
+                    // stream.pause();
+
                     this.log.debug(`updating : ${ind}`);
                     ind = ind + 1;
-                    await this.passengerVolRepository.save(passengerVol);
-                    stream.resume();
+
+                    // await this.passengerVolRepository.save(passengerVol);
+
+                    // stream.resume();
                 })
                 .on('end', () => {
                     this.log.info(`Updated passenger volume from file ${fileName}`);

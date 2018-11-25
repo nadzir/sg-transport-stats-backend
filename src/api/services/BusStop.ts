@@ -56,4 +56,13 @@ export class BusStopService {
         });
         this.log.info(`Updated bus stops`);
     }
+
+    public async getBusStopDetail(busStopCode: string): Promise<BusStop> {
+        const busStops = await this.busStopRepository.find({
+            where: {
+                busStopCode,
+            },
+        });
+        return busStops[0];
+    }
 }

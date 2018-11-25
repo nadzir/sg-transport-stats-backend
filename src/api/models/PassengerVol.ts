@@ -50,4 +50,7 @@ export class PassengerVol {
         name: 'total_trips',
     })
     public totalTrips: string;
+
+    @Column({nullable: true})
+    public polyline: string;
 }

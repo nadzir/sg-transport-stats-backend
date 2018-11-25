@@ -40,6 +40,8 @@
     }
   ],
   "dependencies": {
+    "@google/maps": "^0.5.5",
+    "@types/googlemaps": "^3.30.16",
     "axios": "^0.18.0",
     "bcrypt": "3.0.1",
     "chalk": "^2.4.1",
