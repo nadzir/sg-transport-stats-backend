@@ -10,7 +10,8 @@ import { OrmRepository } from 'typeorm-typedi-extensions';
 import csv from 'csv-parser';
 import { PassengerVol } from '../models/PassengerVol';
 import { BusStopService } from './BusStop';
-import { getDirections } from '../../lib/google';
+import polyUtil from 'polyline-encoded';
+// import { getDirections } from '../../lib/google';
 
 @Service()
 export class PassengerVolService {
@@ -90,22 +91,27 @@ export class PassengerVolService {
                     const destinationBusStop = await this.busStopService.getBusStopDetail(passengerVol.destinationPtCode);
 
                     if (originBusStop && destinationBusStop) {
-                        const originLatLng = [originBusStop.latitude, originBusStop.longitude];
-                        const destinationLatLng = [destinationBusStop.latitude, destinationBusStop.longitude];
-                        const polyline = await getDirections(originLatLng, destinationLatLng);
-                        passengerVol.polyline = polyline;
+                        // const originLatLng = [originBusStop.latitude, originBusStop.longitude];
+                        // const destinationLatLng = [destinationBusStop.latitude, destinationBusStop.longitude];
+                        // const polyline = await getDirections(originLatLng, destinationLatLng);
+                        // console.log('POLYLINE')
+                        // passengerVol.polyline = polyline;
 
-                        // const oneMapKey = getOsEnv('ONE_MAP_TOKEN')
-                        // console.log('hi')
+                        const oneMapKey = getOsEnv('ONE_MAP_TOKEN');
                         /* tslint:disable-next-line */
-                        // console.log(`https://developers.onemap.sg/privateapi/routingsvc/route?start=${originBusStop.latitude},${originBusStop.longitude}&end=${destinationBusStop.latitude},${destinationBusStop.longitude}&routeType=pt&token=${oneMapKey}&date=2017-02-03&time=07:35:00&mode=BUS&maxWalkDistance=1000&numItineraries=3`);
-                        // const response = await axios({
-                        //     method: 'get',
-                        /* tslint:disable-next-line */
-                        //     url: `https://developers.onemap.sg/privateapi/routingsvc/route?start=${originBusStop.latitude},${originBusStop.longitude}&end=${destinationBusStop.latitude},${destinationBusStop.longitude}&routeType=pt&token=${oneMapKey}&date=2017-02-03&time=07:35:00&mode=BUS&maxWalkDistance=1000&numItineraries=3`
-                        // });
-                        // // passengerVol.polyline = response.data.value.route_geometry;
-                        // console.log(response)
+                        // console.log(`https://developers.onemap.sg/privateapi/routingsvc/route?start=${originBusStop.latitude},${originBusStop.longitude}&end=${destinationBusStop.latitude},${destinationBusStop.longitude}&routeType=pt&token=${oneMapKey}&date=2017-02-03&time=07:35:00&mode=BUS`);
+                        const response = await axios({
+                            method: 'get',
+                            /* tslint:disable-next-line */
+                            url: `https://developers.onemap.sg/privateapi/routingsvc/route?start=${originBusStop.latitude},${originBusStop.longitude}&end=${destinationBusStop.latitude},${destinationBusStop.longitude}&routeType=pt&token=${oneMapKey}&date=2018-02-03&time=10:00:00&mode=BUS`
+                        });
+                        passengerVol.polyline = response.data.plan.itineraries[0].legs.reduce((polyline, leg) => {
+                            // console.log(leg.legGeometry.points)
+                            const latlngs = polyUtil.decode(leg.legGeometry.points, {
+                                precision: 6,
+                            });
+                            return polyline = polyline + ',' + leg.legGeometry.points;
+                        }, '');
 
                     }
 
@@ -114,7 +120,12 @@ export class PassengerVolService {
                     this.log.debug(`updating : ${ind}`);
                     ind = ind + 1;
 
-                    await this.passengerVolRepository.save(passengerVol);
+                    try {
+                        await this.passengerVolRepository.save(passengerVol);
+                    } catch (error) {
+                        console.error({ passengerVol });
+                        this.log.error(error);
+                    }
 
                     stream.resume();
                 })

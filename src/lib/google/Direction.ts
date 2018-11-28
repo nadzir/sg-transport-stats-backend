@@ -8,7 +8,6 @@ export const getDirections = (origin: any, destination: any): Promise<string> =>
             mode: 'transit',
             transit_mode: ['bus'],
         }, (err, response) => {
-            // console.log(response)
             if (response.status === 200) {
                 resolve(response.json.routes[0].legs[0].steps[0].polyline.points);
             }

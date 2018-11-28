@@ -16,9 +16,11 @@ export class BusStopController {
     @Get('/update')
     public async update(): Promise<string> {
         const arr = times(150, Number);
-        arr.forEach((_, index) => {
+        arr.forEach((index) => {
             console.log(index);
-            this.busStopService.update(index);
+            setTimeout(() => {
+                this.busStopService.update(index);
+            }, 500 * index);
         });
         return Promise.resolve('Updating bus stop');
     }
