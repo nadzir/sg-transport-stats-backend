@@ -7,7 +7,7 @@ before_install:
 - export PATH=$PATH:$HOME/.local/bin
 script:
 - eval $(aws ecr get-login --no-include-email --region ap-southeast-1)
-- docker-compose build
+- docker build -t transport-backend .
 - docker tag transport-backend $AWS_ECR_IMAGE
 - docker push $AWS_ECR_IMAGE
 - aws ecs list-tasks --cluster $AWS_CLUSTER_NAME --region ap-southeast-1 | jq -r ".taskArns[]"
