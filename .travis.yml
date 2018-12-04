@@ -1,14 +1,18 @@
-language: node_js
-node_js:
-  - "8.9.4"
-install:
-  - yarn install
-env:
-  - DB_TYPE="sqlite" DB_DATABASE="./mydb.sql" DB_LOGGING=false
+sudo: required
+language: generic
+services:
+- docker
+before_install:
+- pip install --user awscli
+- export PATH=$PATH:$HOME/.local/bin
 script:
-  - npm start test
-  - npm start test.integration
-  - npm start test.e2e
-  - npm start build
-notifications:
-  email: false
+- eval $(aws ecr get-login --no-include-email --region ap-southeast-1)
+- docker-compose build
+- docker tag transport-backend $AWS_ECR_IMAGE
+- docker push $AWS_ECR_IMAGE
+- aws ecs list-tasks --cluster $AWS_CLUSTER_NAME --region ap-southeast-1 | jq -r ".taskArns[]" | awk '{print "aws ecs stop-task --cluster $AWS_CLUSTER_NAME --region ap-southeast-1 --task \""$0"\""}' | sh
+- aws ecs run-task --cluster $AWS_CLUSTER_NAME --task-definition $AWS_TASK_DEF --count 1 --region ap-southeast-1
+env:
+  global:
+  - secure: bGsnlwHvzz1KJwhC1a/L7/HKqu5OE38HUzGi0A46RbjANZ5Yqd8HnC7HewSBPpyWJI1rmFGM/7COROpC+0yj2yez39M7YaoVAZh9HL/Li1yjfhXjHu75iwmo8XaMJH6mvozmEO0co6+jWumveilEu8/YcMAsnfyAuLlZlcdx3JbeQ76mDF2gZS+AEsvW/RTzbputlfP/Kp/nO2fIh/PhGvynudn9LD15Aq5+xGFdYTHAx9VzM98gszFPjtCBh6BrzqmrKCNwPFMzCV+N/T3yMg4frNLsGHVwKc08weIoxFs4mWSNyNXg8kdDNp4ThXwu1JGpQTX4/3CJLnvHDSxamSWyJF8BUeqNOOITf9djsc9TWn0Zpzf4isUvgQaMQPb1G6pgbXPzMexH9h0kdQ6iYEhsLEYEmg/vEx+ZsR+hO7PdPZwWWvVkyiGuXVk+hNbvqkNHHS7txyKAxKIUBRkQVS8FQmt+PZ5WcjgaJe+SdpgamK2hpEGdcSFsIabxknS3HeXAb5rdQO5jk9zuxGdy9WQs8GMPnKl8D7uAU68PToS+LfOZ/8bHrz99htg8TZF9sOkv6vSjl93eImuKWoj9kvcJNKSMa3v3BePR9Uran6V6k//JKf+CGJOniwwoq5rTMnm1BZRAPQa7APGFnsXRmLZ85yGmrp7MBp2fa1lHI7w=
+  - secure: i4++6bc1Y2oPfhISlOTy3b6yoI/Tfnaj5ZV4wUs98KJMwfzWEBdaYhwgRmDT7uKxLmJEyI+k/qRSrDZUtgVsXp7UuXQxkZLajljMzC6iJOq5QSfwBsUbeANactHUM5gLubfKzy40Rvz/MzIEFHFIUrg+m/eqdY0wKk7D06tKqYQ13vOn2XiZ5K/Eq4HDe6uI/GaFtWWZ1qVVha0DANJzN1y8mbmT5yVg6+1m4EEQmwb9GfM/h03zOOVXYk7sSXGt1DWQEQlG2g5tEabmqbnkpmVMh3X+Yaa5IZ0q1dUG0+HettPo0Rs0XCWq5OqLz0eIHCiy1wCJYNpglL4DJS14WPxPWXPAsdsK2jJdUiiYRUwgsLkPdUXrZ6IMPj1Zz2rPbwcHxzEx0k/g6I20FK+iyKG1dNeNCfx5D3h6T/j0C0Fs57ybADaBz8jTDKIBRO+8HhgCgl13W3gGUhMJQxmLEnFaX28WyP0xHO2PmzMmPaQBto5DCnBkvb3Ohs8vudDL3ek4ZwJn8DeNN7ludLqIx8hHy7ibDvUWHDKzockn0AzrDT4k8ky9REf8HHKHQDWnrE8gmfLmvFLFjGeat/8hisN9hmbGTGglgFKlIUY6bh2HCVHar+NZioNVNRXl+IkA4OUcVD3EcNa43spFvo8PCMdo+baqRmDUII6gtRyChRc=
