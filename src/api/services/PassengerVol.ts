@@ -10,8 +10,6 @@ import { OrmRepository } from 'typeorm-typedi-extensions';
 import csv from 'csv-parser';
 import { PassengerVol } from '../models/PassengerVol';
 import { BusStopService } from './BusStop';
-import polyUtil from 'polyline-encoded';
-// import { getDirections } from '../../lib/google';
 
 @Service()
 export class PassengerVolService {
@@ -24,12 +22,6 @@ export class PassengerVolService {
 
     public find(): Promise<PassengerVol[]> {
         this.log.info('Find all passenger volume');
-        // return this.passengerVolRepository
-        //     .find({
-        //         order: {
-        //             totalTrips: 'DESC',
-        //         },
-        //     });
         return this.passengerVolRepository.findWithLocation();
     }
 
@@ -91,26 +83,20 @@ export class PassengerVolService {
                     const destinationBusStop = await this.busStopService.getBusStopDetail(passengerVol.destinationPtCode);
 
                     if (originBusStop && destinationBusStop) {
+                        // Getting from Google
                         // const originLatLng = [originBusStop.latitude, originBusStop.longitude];
                         // const destinationLatLng = [destinationBusStop.latitude, destinationBusStop.longitude];
                         // const polyline = await getDirections(originLatLng, destinationLatLng);
-                        // console.log('POLYLINE')
                         // passengerVol.polyline = polyline;
 
                         const oneMapKey = getOsEnv('ONE_MAP_TOKEN');
-                        /* tslint:disable-next-line */
-                        // console.log(`https://developers.onemap.sg/privateapi/routingsvc/route?start=${originBusStop.latitude},${originBusStop.longitude}&end=${destinationBusStop.latitude},${destinationBusStop.longitude}&routeType=pt&token=${oneMapKey}&date=2017-02-03&time=07:35:00&mode=BUS`);
                         const response = await axios({
                             method: 'get',
                             /* tslint:disable-next-line */
                             url: `https://developers.onemap.sg/privateapi/routingsvc/route?start=${originBusStop.latitude},${originBusStop.longitude}&end=${destinationBusStop.latitude},${destinationBusStop.longitude}&routeType=pt&token=${oneMapKey}&date=2018-02-03&time=10:00:00&mode=BUS`
                         });
                         passengerVol.polyline = response.data.plan.itineraries[0].legs.reduce((polyline, leg) => {
-                            // console.log(leg.legGeometry.points)
-                            const latlngs = polyUtil.decode(leg.legGeometry.points, {
-                                precision: 6,
-                            });
-                            return polyline = polyline + ',' + leg.legGeometry.points;
+                            return polyline = polyline + '[,]' + leg.legGeometry.points;
                         }, '');
 
                     }

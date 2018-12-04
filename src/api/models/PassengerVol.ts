@@ -52,8 +52,8 @@ export class PassengerVol {
     public totalTrips: number;
 
     @Column({
+        type: 'longtext',
         nullable: true,
-        length: 1000,
     })
     public polyline: string;
 }

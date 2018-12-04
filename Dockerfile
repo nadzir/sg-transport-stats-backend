@@ -1,4 +1,4 @@
-FROM node:alpine
+FROM node:8.12.0-alpine
 
 # Create work directory
 WORKDIR /usr/src/app
@@ -10,7 +10,8 @@ RUN npm install yarn -g
 COPY . /usr/src/app
 
 # Install app dependencies
-RUN yarn install
+RUN npm install
+RUN npm start build
 
 # Build and run the app
 CMD npm start serve
