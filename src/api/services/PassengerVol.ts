@@ -103,6 +103,8 @@ export class PassengerVolService {
 
                     stream.pause();
 
+                    await sleep(5000);
+
                     this.log.debug(`updating : ${ind}`);
                     ind = ind + 1;
 
@@ -122,3 +124,9 @@ export class PassengerVolService {
         });
     }
 }
+
+const sleep = (ms) => {
+    return new Promise(resolve => {
+        setTimeout(resolve, ms);
+    });
+};

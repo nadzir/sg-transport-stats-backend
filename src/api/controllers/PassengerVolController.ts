@@ -23,9 +23,9 @@ export class PassengerVolController {
         const dataDir = 'data/passengerVol';
         const zipFile = 'data/tmp/passengerVol.zip';
 
-       this.passengerVolService.downloadZipFile(zipFile);
-       this.passengerVolService.unzipFile(zipFile, dataDir);
-       this.passengerVolService.update(dataDir);
+       await this.passengerVolService.downloadZipFile(zipFile);
+       await this.passengerVolService.unzipFile(zipFile, dataDir);
+    //    this.passengerVolService.update(dataDir);
 
         return Promise.resolve('updating passenger volume');
     }
