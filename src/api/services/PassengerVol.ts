@@ -44,7 +44,7 @@ export class PassengerVolService {
             this.log.info(link);
             https.get(link, (resp) => {
                 resp.pipe(file)
-                .on('finish', () => Promise.resolve(true));
+                    .on('finish', () => Promise.resolve(true));
             });
         } catch (err) {
             this.log.error('Error in getting LTA passenger vol');
@@ -70,27 +70,45 @@ export class PassengerVolService {
             stream
                 .pipe(csv())
                 .on('data', async (data) => {
-                    const passengerVol = new PassengerVol();
-                    passengerVol.yearMonth = data.YEAR_MONTH;
-                    passengerVol.dayType = data.DAY_TYPE;
-                    passengerVol.timePerHour = data.TIME_PER_HOUR;
-                    passengerVol.ptType = data.PT_TYPE;
-                    passengerVol.originPtCode = data.ORIGIN_PT_CODE;
-                    passengerVol.destinationPtCode = data.DESTINATION_PT_CODE;
-                    passengerVol.totalTrips = data.TOTAL_TRIPS;
+                    stream.pause();
 
-                    const originBusStop = await this.busStopService.getBusStopDetail(passengerVol.originPtCode);
-                    const destinationBusStop = await this.busStopService.getBusStopDetail(passengerVol.destinationPtCode);
+                    setTimeout(() => getPolyline(data), ind * 5000);
+                    ind = ind + 1;
 
-                    if (originBusStop && destinationBusStop) {
-                        // Getting from Google
-                        // const originLatLng = [originBusStop.latitude, originBusStop.longitude];
-                        // const destinationLatLng = [destinationBusStop.latitude, destinationBusStop.longitude];
-                        // const polyline = await getDirections(originLatLng, destinationLatLng);
-                        // passengerVol.polyline = polyline;
+                    stream.resume();
 
+                })
+                .on('end', () => {
+                    this.log.info(`Updated passenger volume from file ${fileName}`);
+                    Promise.resolve();
+                });
+
+            const getPolyline = async (data) => {
+
+                // this.log.debug(`updating : ${ind}`);
+                this.log.debug(`updating polyline`);
+
+                const passengerVol = new PassengerVol();
+                passengerVol.yearMonth = data.YEAR_MONTH;
+                passengerVol.dayType = data.DAY_TYPE;
+                passengerVol.timePerHour = data.TIME_PER_HOUR;
+                passengerVol.ptType = data.PT_TYPE;
+                passengerVol.originPtCode = data.ORIGIN_PT_CODE;
+                passengerVol.destinationPtCode = data.DESTINATION_PT_CODE;
+                passengerVol.totalTrips = data.TOTAL_TRIPS;
+
+                const originBusStop = await this.busStopService.getBusStopDetail(passengerVol.originPtCode);
+                const destinationBusStop = await this.busStopService.getBusStopDetail(passengerVol.destinationPtCode);
+
+                if (originBusStop && destinationBusStop) {
+                    // Getting from Google
+                    // const originLatLng = [originBusStop.latitude, originBusStop.longitude];
+                    // const destinationLatLng = [destinationBusStop.latitude, destinationBusStop.longitude];
+                    // const polyline = await getDirections(originLatLng, destinationLatLng);
+                    // passengerVol.polyline = polyline;
+                    try {
+                        this.log.debug('Calling one map api');
                         const oneMapKey = getOsEnv('ONE_MAP_TOKEN');
-                        await sleep(5000);
                         const response = await axios({
                             method: 'get',
                             /* tslint:disable-next-line */
@@ -99,35 +117,24 @@ export class PassengerVolService {
                         passengerVol.polyline = response.data.plan.itineraries[0].legs.reduce((polyline, leg) => {
                             return polyline = polyline + '[,]' + leg.legGeometry.points;
                         }, '');
-
-                    }
-
-                    stream.pause();
-
-                    await sleep(5000);
-
-                    this.log.debug(`updating : ${ind}`);
-                    ind = ind + 1;
-
-                    try {
-                        await this.passengerVolRepository.save(passengerVol);
                     } catch (error) {
-                        console.error({ passengerVol });
                         this.log.error(error);
                     }
+                }
 
-                    stream.resume();
-                })
-                .on('end', () => {
-                    this.log.info(`Updated passenger volume from file ${fileName}`);
-                    Promise.resolve();
-                });
+                try {
+                    await this.passengerVolRepository.save(passengerVol);
+                } catch (error) {
+                    console.error({ passengerVol });
+                    this.log.error(error);
+                }
+            };
         });
     }
 }
 
-const sleep = (ms) => {
-    return new Promise(resolve => {
-        setTimeout(resolve, ms);
-    });
-};
+// const sleep = (ms) => {
+//     return new Promise(resolve => {
+//         setTimeout(resolve, ms);
+//     });
+// };
