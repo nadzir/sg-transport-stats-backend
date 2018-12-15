@@ -90,6 +90,7 @@ export class PassengerVolService {
                         // passengerVol.polyline = polyline;
 
                         const oneMapKey = getOsEnv('ONE_MAP_TOKEN');
+                        await sleep(5000);
                         const response = await axios({
                             method: 'get',
                             /* tslint:disable-next-line */
