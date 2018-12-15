@@ -8,7 +8,8 @@
     "setup": "npm start config && npm start setup.script",
     "start": "nps",
     "start:db": "docker run --name mysql -e MYSQL_ROOT_PASSWORD=password -e MYSQL_DATABASE=lta_db -e MYSQL_USER=dev -e MYSQL_PASSWORD=dev -p=3306:3306 -d mysql:5.7.20",
-    "test": "npm start test"
+    "test": "npm start test",
+    "migrate": "npm start db.migrate"
   },
   "engines": {
     "node": ">=8.0.0"

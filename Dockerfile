@@ -14,4 +14,4 @@ RUN npm install
 RUN npm start build
 
 # Build and run the app
-CMD npm start serve
+CMD npm run migrate && npm start serve
