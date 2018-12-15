@@ -43,8 +43,8 @@ export class PassengerVolService {
             this.log.info('Obtained link : ');
             this.log.info(link);
             https.get(link, (resp) => {
-                resp.pipe(file);
-                Promise.resolve(true);
+                resp.pipe(file)
+                .on('finish', () => Promise.resolve(true));
             });
         } catch (err) {
             this.log.error('Error in getting LTA passenger vol');

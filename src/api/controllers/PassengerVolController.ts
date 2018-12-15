@@ -21,11 +21,11 @@ export class PassengerVolController {
     @Get('/update')
     public async update(): Promise<string> {
         const dataDir = 'data/passengerVol';
-        const zipFile = 'data/tmp/passengerVol.zip';
+        // const zipFile = 'data/passengerVol.zip';
 
-       await this.passengerVolService.downloadZipFile(zipFile);
-       await this.passengerVolService.unzipFile(zipFile, dataDir);
-    //    this.passengerVolService.update(dataDir);
+    //    await this.passengerVolService.downloadZipFile(zipFile);
+    //    await this.passengerVolService.unzipFile(zipFile, dataDir);
+       this.passengerVolService.update(dataDir);
 
         return Promise.resolve('updating passenger volume');
     }
