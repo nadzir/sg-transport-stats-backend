@@ -10,6 +10,7 @@ import { OrmRepository } from 'typeorm-typedi-extensions';
 import csv from 'csv-parser';
 import { PassengerVol } from '../models/PassengerVol';
 import { BusStopService } from './BusStop';
+import { get , omit} from 'lodash';
 
 @Service()
 export class PassengerVolService {
@@ -72,11 +73,25 @@ export class PassengerVolService {
                 .on('data', async (data) => {
                     stream.pause();
 
-                    setTimeout(() => getPolyline(data), ind * 5000);
-                    ind = ind + 1;
+                    const foundPassengerVols = await this.passengerVolRepository.find({
+                        where: {
+                            yearMonth: data.YEAR_MONTH,
+                            dayType: data.DAY_TYPE,
+                            timePerHour: data.TIME_PER_HOUR,
+                            ptType: data.PT_TYPE,
+                            originPtCode: data.ORIGIN_PT_CODE,
+                            destinationPtCode: data.DESTINATION_PT_CODE,
+                        },
+                    });
+                    const foundPassengerVol = foundPassengerVols.length === 0 ? undefined : foundPassengerVols[0];
+
+                    // If new data or polyline is null
+                    if (foundPassengerVol === null || get(foundPassengerVol, 'polyline') === null) {
+                        setTimeout(() => getPolyline(data), ind * 5000);
+                        ind = ind + 1;
+                    }
 
                     stream.resume();
-
                 })
                 .on('end', () => {
                     this.log.info(`Updated passenger volume from file ${fileName}`);
@@ -106,6 +121,8 @@ export class PassengerVolService {
                     // const destinationLatLng = [destinationBusStop.latitude, destinationBusStop.longitude];
                     // const polyline = await getDirections(originLatLng, destinationLatLng);
                     // passengerVol.polyline = polyline;
+
+                    // Getting from one map
                     try {
                         this.log.debug('Calling one map api');
                         const oneMapKey = getOsEnv('ONE_MAP_TOKEN');
@@ -123,6 +140,9 @@ export class PassengerVolService {
                 }
 
                 try {
+                    // Delete previous polyline
+                    await this.passengerVolRepository.delete(omit(passengerVol, ['polyline']));
+                    // Save
                     await this.passengerVolRepository.save(passengerVol);
                 } catch (error) {
                     console.error({ passengerVol });

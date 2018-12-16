@@ -1,6 +1,7 @@
 {
   "name": "sg-lta-stats",
   "version": "0.0.1",
+  "main": "src/app.ts",
   "scripts": {
     "build": "npm start build",
     "generate-migration": "./node_modules/.bin/ts-node ./node_modules/.bin/typeorm migration:generate",
