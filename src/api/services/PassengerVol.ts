@@ -87,7 +87,7 @@ export class PassengerVolService {
 
                     // If new data or polyline is null
                     if (foundPassengerVol === null || get(foundPassengerVol, 'polyline') === null) {
-                        setTimeout(() => getPolyline(data), ind * 5000);
+                        setTimeout(async () => await getPolyline(data), ind * 5000);
                         ind = ind + 1;
                     }
 
