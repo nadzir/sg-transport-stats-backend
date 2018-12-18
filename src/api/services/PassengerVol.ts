@@ -86,7 +86,7 @@ export class PassengerVolService {
                     const foundPassengerVol = foundPassengerVols.length === 0 ? undefined : foundPassengerVols[0];
 
                     // If new data or polyline is null
-                    if (foundPassengerVol === null || get(foundPassengerVol, 'polyline') === null) {
+                    if (foundPassengerVol === undefined || get(foundPassengerVol, 'polyline') === null) {
                         setTimeout(async () => await getPolyline(data), ind * 5000);
                         ind = ind + 1;
                     }
