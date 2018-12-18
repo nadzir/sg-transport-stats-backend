@@ -77,49 +77,47 @@ export class PassengerVolService {
                 this.log.error(`Error reading file : ${err}`);
             });
 
-            lr.on('line', line => {
-                csv({
+            lr.on('line', async (line) => {
+                const csvRow = await csv({
                     noheader: true,
                     output: 'csv',
                 })
-                    .fromString(line)
-                    .then(async (csvRow) => {
+                    .fromString(line);
 
-                        // Get the data
-                        const passengerVol = new PassengerVol();
-                        passengerVol.yearMonth = csvRow[0][0];
-                        passengerVol.dayType = csvRow[0][1];
-                        passengerVol.timePerHour = csvRow[0][2];
-                        passengerVol.ptType = csvRow[0][3];
-                        passengerVol.originPtCode = csvRow[0][4];
-                        passengerVol.destinationPtCode = csvRow[0][5];
-                        passengerVol.totalTrips = csvRow[0][6];
+                // Get the data
+                const passengerVol = new PassengerVol();
+                passengerVol.yearMonth = csvRow[0][0];
+                passengerVol.dayType = csvRow[0][1];
+                passengerVol.timePerHour = csvRow[0][2];
+                passengerVol.ptType = csvRow[0][3];
+                passengerVol.originPtCode = csvRow[0][4];
+                passengerVol.destinationPtCode = csvRow[0][5];
+                passengerVol.totalTrips = csvRow[0][6];
 
-                        // Return if header
-                        if (passengerVol.yearMonth === 'YEAR_MONTH') {
-                            return;
-                        }
+                // Return if header
+                if (passengerVol.yearMonth === 'YEAR_MONTH') {
+                    return;
+                }
 
-                        // Check if data exists
-                        const foundPassengerVols = await this.passengerVolRepository.find({
-                            where: {
-                                yearMonth: passengerVol.yearMonth,
-                                dayType: passengerVol.dayType,
-                                timePerHour: passengerVol.timePerHour,
-                                ptType: passengerVol.ptType,
-                                originPtCode: passengerVol.originPtCode,
-                                destinationPtCode: passengerVol.destinationPtCode,
-                            },
-                        });
-                        const foundPassengerVol = foundPassengerVols.length === 0 ? undefined : foundPassengerVols[0];
+                // Check if data exists
+                const foundPassengerVols = await this.passengerVolRepository.find({
+                    where: {
+                        yearMonth: passengerVol.yearMonth,
+                        dayType: passengerVol.dayType,
+                        timePerHour: passengerVol.timePerHour,
+                        ptType: passengerVol.ptType,
+                        originPtCode: passengerVol.originPtCode,
+                        destinationPtCode: passengerVol.destinationPtCode,
+                    },
+                });
+                const foundPassengerVol = foundPassengerVols.length === 0 ? undefined : foundPassengerVols[0];
 
-                        // If new data or polyline is null
-                        if (foundPassengerVol === undefined || get(foundPassengerVol, 'polyline') === null) {
-                            setTimeout(async () => await getPolyline(passengerVol), ind * 5000);
-                            ind = ind + 1;
-                        }
+                // If new data or polyline is null
+                if (foundPassengerVol === undefined || get(foundPassengerVol, 'polyline') === null) {
+                    setTimeout(async () => await getPolyline(passengerVol), ind * 5000);
+                    ind = ind + 1;
+                }
 
-                    });
             });
 
             lr.on('end', () => {
