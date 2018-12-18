@@ -7,10 +7,11 @@ import { Logger, LoggerInterface } from '../../decorators/Logger';
 import { getOsEnv } from '../../lib/env/utils';
 import { PassengerVolRepository } from '../repositories/PassengerVolRepository';
 import { OrmRepository } from 'typeorm-typedi-extensions';
-import csv from 'csv-parser';
 import { PassengerVol } from '../models/PassengerVol';
 import { BusStopService } from './BusStop';
-import { get , omit} from 'lodash';
+import { get, omit } from 'lodash';
+import LineByLineReader from 'line-by-line';
+import csv from 'csvtojson';
 
 @Service()
 export class PassengerVolService {
@@ -67,50 +68,68 @@ export class PassengerVolService {
 
             let ind = 0;
 
-            const stream = fs.createReadStream(`${dataDir}/${fileName}`, { highWaterMark: 1 });
-            stream
-                .pipe(csv())
-                .on('data', async (data) => {
-                    stream.pause();
+            const lr = new LineByLineReader(`${dataDir}/${fileName}`, {
+                encoding: 'utf8',
+                skipEmptyLines: true,
+            });
 
-                    const foundPassengerVols = await this.passengerVolRepository.find({
-                        where: {
-                            yearMonth: data.YEAR_MONTH,
-                            dayType: data.DAY_TYPE,
-                            timePerHour: data.TIME_PER_HOUR,
-                            ptType: data.PT_TYPE,
-                            originPtCode: data.ORIGIN_PT_CODE,
-                            destinationPtCode: data.DESTINATION_PT_CODE,
-                        },
-                    });
-                    const foundPassengerVol = foundPassengerVols.length === 0 ? undefined : foundPassengerVols[0];
+            lr.on('error', err => {
+                this.log.error(`Error reading file : ${err}`);
+            });
 
-                    // If new data or polyline is null
-                    if (foundPassengerVol === undefined || get(foundPassengerVol, 'polyline') === null) {
-                        setTimeout(async () => await getPolyline(data), ind * 5000);
-                        ind = ind + 1;
-                    }
-
-                    stream.resume();
+            lr.on('line', line => {
+                csv({
+                    noheader: true,
+                    output: 'csv',
                 })
-                .on('end', () => {
-                    this.log.info(`Updated passenger volume from file ${fileName}`);
-                    Promise.resolve();
-                });
+                    .fromString(line)
+                    .then(async (csvRow) => {
 
-            const getPolyline = async (data) => {
+                        // Get the data
+                        const passengerVol = new PassengerVol();
+                        passengerVol.yearMonth = csvRow[0][0];
+                        passengerVol.dayType = csvRow[0][1];
+                        passengerVol.timePerHour = csvRow[0][2];
+                        passengerVol.ptType = csvRow[0][3];
+                        passengerVol.originPtCode = csvRow[0][4];
+                        passengerVol.destinationPtCode = csvRow[0][5];
+                        passengerVol.totalTrips = csvRow[0][6];
 
-                // this.log.debug(`updating : ${ind}`);
-                this.log.debug(`updating polyline`);
+                        // Return if header
+                        if (passengerVol.yearMonth === 'YEAR_MONTH') {
+                            return;
+                        }
 
-                const passengerVol = new PassengerVol();
-                passengerVol.yearMonth = data.YEAR_MONTH;
-                passengerVol.dayType = data.DAY_TYPE;
-                passengerVol.timePerHour = data.TIME_PER_HOUR;
-                passengerVol.ptType = data.PT_TYPE;
-                passengerVol.originPtCode = data.ORIGIN_PT_CODE;
-                passengerVol.destinationPtCode = data.DESTINATION_PT_CODE;
-                passengerVol.totalTrips = data.TOTAL_TRIPS;
+                        // Check if data exists
+                        const foundPassengerVols = await this.passengerVolRepository.find({
+                            where: {
+                                yearMonth: passengerVol.yearMonth,
+                                dayType: passengerVol.dayType,
+                                timePerHour: passengerVol.timePerHour,
+                                ptType: passengerVol.ptType,
+                                originPtCode: passengerVol.originPtCode,
+                                destinationPtCode: passengerVol.destinationPtCode,
+                            },
+                        });
+                        const foundPassengerVol = foundPassengerVols.length === 0 ? undefined : foundPassengerVols[0];
+
+                        // If new data or polyline is null
+                        if (foundPassengerVol === undefined || get(foundPassengerVol, 'polyline') === null) {
+                            setTimeout(async () => await getPolyline(passengerVol), ind * 5000);
+                            ind = ind + 1;
+                        }
+
+                    });
+            });
+
+            lr.on('end', () => {
+                this.log.info(`Updated passenger volume from file ${fileName}`);
+                Promise.resolve();
+            });
+
+            const getPolyline = async (passengerVol) => {
+
+                this.log.debug(`Updating polyline`);
 
                 const originBusStop = await this.busStopService.getBusStopDetail(passengerVol.originPtCode);
                 const destinationBusStop = await this.busStopService.getBusStopDetail(passengerVol.destinationPtCode);
@@ -118,7 +137,7 @@ export class PassengerVolService {
                 if (originBusStop && destinationBusStop) {
                     // Getting from one map
                     try {
-                        this.log.debug('Calling one map api');
+                        this.log.debug(`Calling one map api`);
                         const oneMapKey = getOsEnv('ONE_MAP_TOKEN');
                         const response = await axios({
                             method: 'get',
