@@ -116,12 +116,6 @@ export class PassengerVolService {
                 const destinationBusStop = await this.busStopService.getBusStopDetail(passengerVol.destinationPtCode);
 
                 if (originBusStop && destinationBusStop) {
-                    // Getting from Google
-                    // const originLatLng = [originBusStop.latitude, originBusStop.longitude];
-                    // const destinationLatLng = [destinationBusStop.latitude, destinationBusStop.longitude];
-                    // const polyline = await getDirections(originLatLng, destinationLatLng);
-                    // passengerVol.polyline = polyline;
-
                     // Getting from one map
                     try {
                         this.log.debug('Calling one map api');
@@ -152,9 +146,3 @@ export class PassengerVolService {
         });
     }
 }
-
-// const sleep = (ms) => {
-//     return new Promise(resolve => {
-//         setTimeout(resolve, ms);
-//     });
-// };
