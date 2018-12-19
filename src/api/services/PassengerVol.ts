@@ -119,7 +119,7 @@ export class PassengerVolService {
                             setTimeout(async () => {
                                 await getPolyline(passengerVol);
                                 lr.resume();
-                            }, ind * 5000);
+                            }, ind * 1000);
                             ind = ind + 1;
                         } else {
                             lr.resume();
