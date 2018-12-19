@@ -66,8 +66,6 @@ export class PassengerVolService {
         files.forEach((fileName) => {
             this.log.info(`Reading data passenger volume from file ${fileName}`);
 
-            let ind = 0;
-
             const lr = new LineByLineReader(`${dataDir}/${fileName}`, {
                 encoding: 'utf8',
                 skipEmptyLines: true,
@@ -116,14 +114,9 @@ export class PassengerVolService {
 
                         // If new data or polyline is null
                         if (foundPassengerVol === undefined || get(foundPassengerVol, 'polyline') === null) {
-                            setTimeout(async () => {
-                                await getPolyline(passengerVol);
-                                lr.resume();
-                            }, ind * 1000);
-                            ind = ind + 1;
-                        } else {
-                            lr.resume();
+                            await getPolyline(passengerVol);
                         }
+                        lr.resume();
                     });
             });
 
