@@ -65,4 +65,9 @@ export class BusStopService {
         });
         return busStops[0];
     }
+
+    public findOne(busStopCode: string): Promise<BusStop | undefined> {
+        this.log.info('Find bus stop');
+        return this.busStopRepository.findOne({ busStopCode });
+    }
 }

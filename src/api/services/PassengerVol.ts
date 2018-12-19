@@ -66,8 +66,6 @@ export class PassengerVolService {
         files.forEach((fileName) => {
             this.log.info(`Reading data passenger volume from file ${fileName}`);
 
-            let ind = 0;
-
             const lr = new LineByLineReader(`${dataDir}/${fileName}`, {
                 encoding: 'utf8',
                 skipEmptyLines: true,
